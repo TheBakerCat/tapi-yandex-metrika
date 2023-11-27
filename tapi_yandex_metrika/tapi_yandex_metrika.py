@@ -22,7 +22,7 @@ LIMIT = 10000
 
 class YandexMetrikaClientAdapterAbstract(JSONAdapterMixin, TapiAdapter):
     def get_api_root(self, api_params, resource_name):
-        return "https://api-metrika.yandex.net/"
+        return "https://api.appmetrica.yandex.ru/"
 
     def get_request_kwargs(self, api_params, *args, **kwargs):
         if "receive_all_data" in api_params:
@@ -353,19 +353,13 @@ class YandexMetrikaStatsClientAdapter(YandexMetrikaClientAdapterAbstract):
 
     def process_response(self, response, request_kwargs, **kwargs):
         data = super().process_response(response, request_kwargs, **kwargs)
-        attribution = data["query"]["attribution"]
-        sampled = data["sampled"]
-        sample_share = data["sample_share"]
         total_rows = int(data["total_rows"])
         offset = data["query"]["offset"]
         limit = request_kwargs["params"].get("limit", LIMIT)
         offset2 = offset + limit - 1
         if offset2 > total_rows:
             offset2 = total_rows
-
-        if sampled:
-            logger.info("Sample: {}".format(sample_share))
-        logger.info("Attribution: {}".format(attribution))
+            
         logger.info(
             "Exported lines {}-{}. Total rows {}".format(offset, offset2, total_rows)
         )
